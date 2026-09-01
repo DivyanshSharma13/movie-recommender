@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+movies_metadata.csv
+model/*.pkl
+server.log
+
