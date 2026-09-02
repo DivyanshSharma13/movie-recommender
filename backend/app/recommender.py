@@ -28,7 +28,7 @@ def search_titles(query: str, limit: int = 10) -> list[str]:
     return (starts + contains)[:limit]
 
 
-def recommend(title: str, n: int = 15, alpha: float = 0.7, min_votes: int = 20,
+def recommend(title: str, n: int = 15, alpha: float = 0.85, min_votes: int = 20,
               method: str = "tfidf"):
     if method == "embedding" and not EMBEDDINGS_AVAILABLE:
         raise ValueError(
@@ -68,7 +68,7 @@ def recommend(title: str, n: int = 15, alpha: float = 0.7, min_votes: int = 20,
     )
     genre_bonus = candidates["genres"].apply(
         lambda g: len(query_genres & set(g.split())) / max(len(query_genres), 1)
-    ) * 0.15
+    ) * 0.25
     language_bonus = (candidates["original_language"] == query_language).astype(float) * 0.20
 
     candidates["final_score"] = alpha * sim_norm + (1 - alpha) * wr_norm + genre_bonus + language_bonus

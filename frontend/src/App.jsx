@@ -7,7 +7,7 @@ import "./App.css";
 // Fixed blend: 70% text similarity, 30% quality score. Not exposed in the UI --
 // keeps the app simple to demo (search a movie, get recommendations) while the
 // backend still does the same hybrid ranking under the hood.
-const ALPHA = 0.7;
+const ALPHA = 0.85;
 
 export default function App() {
   const [selectedTitle, setSelectedTitle] = useState(null);
