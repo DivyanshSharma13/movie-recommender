@@ -1,10 +1,7 @@
-"""
-Loads the artifacts produced by train_model.py once at startup and
-exposes the hybrid recommend() function.
-"""
 import pickle
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -14,6 +11,10 @@ df: pd.DataFrame = pd.read_pickle(MODEL_DIR / "df.pkl")
 tfidf = pickle.load(open(MODEL_DIR / "tfidf.pkl", "rb"))
 tfidf_matrix = pickle.load(open(MODEL_DIR / "tfidf_matrix.pkl", "rb"))
 indices: pd.Series = pickle.load(open(MODEL_DIR / "indices.pkl", "rb"))
+
+_EMBEDDINGS_PATH = MODEL_DIR / "embeddings.npy"
+EMBEDDINGS_AVAILABLE = _EMBEDDINGS_PATH.exists()
+embeddings = np.load(_EMBEDDINGS_PATH) if EMBEDDINGS_AVAILABLE else None
 
 ALL_TITLES = sorted(df["title"].dropna().unique().tolist())
 
@@ -27,7 +28,14 @@ def search_titles(query: str, limit: int = 10) -> list[str]:
     return (starts + contains)[:limit]
 
 
-def recommend(title: str, n: int = 15, alpha: float = 0.7, min_votes: int = 20):
+def recommend(title: str, n: int = 15, alpha: float = 0.7, min_votes: int = 20,
+              method: str = "tfidf"):
+    if method == "embedding" and not EMBEDDINGS_AVAILABLE:
+        raise ValueError(
+            "Embedding method requested but model/embeddings.npy was not found. "
+            "Run train_embeddings.py locally and deploy the generated file."
+        )
+
     if title not in indices:
         raise ValueError(f"'{title}' not found in the dataset")
 
@@ -38,7 +46,10 @@ def recommend(title: str, n: int = 15, alpha: float = 0.7, min_votes: int = 20):
     query_genres = set(df.loc[idx, "genres"].split())
     query_language = df.loc[idx, "original_language"]
 
-    sim_scores = cosine_similarity(tfidf_matrix[idx], tfidf_matrix).flatten()
+    if method == "embedding":
+        sim_scores = cosine_similarity(embeddings[idx:idx + 1], embeddings).flatten()
+    else:
+        sim_scores = cosine_similarity(tfidf_matrix[idx], tfidf_matrix).flatten()
 
     candidates = df.copy()
     candidates["sim_score"] = sim_scores

@@ -25,7 +25,11 @@ _executor = ThreadPoolExecutor(max_workers=8)
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "movies_loaded": len(recommender.df)}
+    return {
+        "status": "ok",
+        "movies_loaded": len(recommender.df),
+        "embedding_method_available": recommender.EMBEDDINGS_AVAILABLE,
+    }
 
 
 @app.get("/api/titles")
@@ -40,9 +44,10 @@ def recommend(
     alpha: float = 0.7,
     min_votes: int = 20,
     enrich: bool = True,
+    method: str = "tfidf",
 ):
     try:
-        results = recommender.recommend(title, n=n, alpha=alpha, min_votes=min_votes)
+        results = recommender.recommend(title, n=n, alpha=alpha, min_votes=min_votes, method=method)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -55,7 +60,7 @@ def recommend(
             r["release_date"] = d["release_date"]
             r["tmdb_rating"] = d["tmdb_rating"]
 
-    return {"query": title, "count": len(results), "results": results}
+    return {"query": title, "method": method, "count": len(results), "results": results}
 
 
 @app.get("/api/movie/{title}")
