@@ -112,6 +112,10 @@
   background: rgba(230, 57, 70, 0.15);
 }
 
+.suggestions li.active {
+  background: rgba(230, 57, 70, 0.15);
+}
+
 .status {
   text-align: center;
   color: #9aa0ac;
@@ -311,3 +315,4 @@ h2 {
     gap: 14px;
   }
 }
+
