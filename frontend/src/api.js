@@ -13,7 +13,7 @@ async function get(path, params = {}) {
 
 export const api = {
   searchTitles: (q, limit = 8) => get("/api/titles", { q, limit }),
-  recommend: (title, { n = 15, alpha = 0.7, minVotes = 20 } = {}) =>
-    get("/api/recommend", { title, n, alpha, min_votes: minVotes }),
+  recommend: (title, { n = 15, alpha = 0.7, minVotes = 20, method = "embedding" } = {}) =>
+    get("/api/recommend", { title, n, alpha, min_votes: minVotes, method }),
   movieDetail: (title) => get(`/api/movie/${encodeURIComponent(title)}`),
 };
